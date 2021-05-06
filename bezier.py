@@ -1,96 +1,41 @@
-def unzip(tuple_obj):
-    x = []
-    y = []
-    for i in tuple_obj:
-        x.append(i[0])
-        y.append(i[1])
-    return [x,y]
+"""De Casteljau's algorithm."""
 
-class bezier(object):
-    def __init__(self, order, pts):
-        self.order = order
-        self.pts = pts
-        self.curve = []
-        self.generate()
+class Curve(object):
+    """Generate bezier curves with variable control points.
 
-    def generate(self):
-        xl = []
-        yl = []
-        p = self.order
-        for tb in range(0,1000):
-            t = tb/1000
-            x = (((1-t)**(p-1)) * self.pts[0][0])
-            y = (((1-t)**(p-1)) * self.pts[0][1])
-            for i in range(1, p-1):
-                
-                x += (p-1) * (((1-t)**((p-1)-i)) * (t**i) * self.pts[i][0])
-                y += (p-1) * (((1-t)**((p-1)-i)) * (t**i) * self.pts[i][1])
-            x += (t**(p-1)) * self.pts[p-1][0]
-            y += (t**(p-1)) * self.pts[p-1][1]
-            xl.append(x)
-            yl.append(y)
-        self.curve = [xl,yl]
+        Attributes:
+            points ( list(tuples(int, int)) ): List of control points
+            curve ( list(tuples(int, int)) ): List of points along path
 
-class bezier_smooth(object):
-    #development
-    def __init__(self, order, pts):
-        self.order = order
-        self.pts = pts
-        self.curve = []
-        self.generate()
-
-    def generate(self):
-        xl = []
-        yl = []
-        p = self.order
-        for tb in range(0,1000):
-            t = tb/1000
-            x = (((1-t)**(p-1)) * self.pts[0][0])
-            y = (((1-t)**(p-1)) * self.pts[0][1])
-            for i in range(1, p-1):
-                
-                x += (p-1) * (((1-t)**((p-1)-i)) * (t**i) * self.pts[i][0]) * ((((p-i)/p)*self.pts[0][0])) + ((i/p)*self.pts[-1][0])
-                y += (p-1) * (((1-t)**((p-1)-i)) * (t**i) * self.pts[i][1]) * ((((p-i)/p)*self.pts[0][1])) + ((i/p)*self.pts[-1][1])
-            x += (t**(p-1)) * self.pts[p-1][0]
-            y += (t**(p-1)) * self.pts[p-1][1]
-            xl.append(x)
-            yl.append(y)
-        self.curve = [xl,yl]
-
-if __name__ == "__main__":
-    import matplotlib
-    import matplotlib.pyplot as plt
-
-    b = bezier(12, [(0,0),(1,2),(4,8),(3,7),(6,4),(5,1),(9,9),(9,1),(3,5),(6,6),(7,4),(10,10)])
-    plt.plot(b.curve[0], b.curve[1])
-    plt.scatter(unzip(b.pts)[0], unzip(b.pts)[1])
-    plt.show()
-
-
+        """
     
-    b = bezier(4, [(0,0),(1.66,0),(3.33,5),(5,5)])
-    plt.plot(b.curve[0], b.curve[1])
-    plt.scatter(unzip(b.pts)[0], unzip(b.pts)[1])
-    plt.show()
+    def __init__(self, *args: (()), auto_generate=True):
+        """Create Curve object and generate path given control points.
 
+        Args:
+            *args ( tuple(int, int) ): List of tuples representing control points
+            auto_generate ( bool ): Indicates whether curve should be generated on initialization
 
-                                                                                
+        """
+        self.points = list(args)
+        self.curve = []
+        if auto_generate:
+            self.generate()
 
-    b = bezier(5, [(0,0),(3,3),(2,4),(0,3),(1,2)])
-    plt.plot(b.curve[0], b.curve[1])
-    plt.scatter(unzip(b.pts)[0], unzip(b.pts)[1])
-    plt.show()
+    def generate(self, path_resolution=1000):
+        """Generate path using control points at a user defined granularity.
 
+        Args:
+            path_resolution ( int ): Number of points used to create curve
 
-    b = bezier(6, [(0,0),(1,6),(2,3),(3,5),(4,4), (3, 3)])
-    plt.plot(b.curve[0], b.curve[1])
-    plt.scatter(unzip(b.pts)[0], unzip(b.pts)[1])
-    plt.show()
-
-    b = bezier(5, [(6,0),(0,3),(3,5),(6,3),(0,0)])
-    plt.plot(b.curve[0], b.curve[1])
-    plt.scatter(unzip(b.pts)[0], unzip(b.pts)[1])
-    plt.show()
-
-
+        """
+        self.curve = []
+        
+        C = len(self.points) - 1
+        for i in range(path_resolution):
+            t = i/path_resolution
+            self.curve.append([0,0])
+            for k,p in enumerate(self.points):
+                self.curve[-1][0] += ((1-t)**(C-k)) * (t**(k)) * p[0] * (C if k not in [0, C] else 1)
+                self.curve[-1][1] += ((1-t)**(C-k)) * (t**(k)) * p[1] * (C if k not in [0, C] else 1)
 
