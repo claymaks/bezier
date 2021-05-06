@@ -60,7 +60,6 @@ while running:
             display.fill((255, 255, 255))
             display.blit(controls, textRect)
 
-            print(c.points)
             for p in c.points:
                 pygame.draw.circle(display, (255, 0, 0), p, 5)
 
